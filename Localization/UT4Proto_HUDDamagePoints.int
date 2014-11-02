@@ -1,0 +1,3 @@
+[UT4DamagePointsMutator UTUIDataProvider_Mutator]
+FriendlyName="UT4 Prototype: Damage Points (HUD widget)"
+Description="A HUD widget showing the actual possible damage you can receive as a player"
