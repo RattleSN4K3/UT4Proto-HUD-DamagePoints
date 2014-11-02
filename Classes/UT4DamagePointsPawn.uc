@@ -1,7 +1,7 @@
 class UT4DamagePointsPawn extends UTPawn;
 
 var bool bTesting;
-var int ShotCount;
+var int TestShotCount;
 var bool bTestProcessing;
 
 function bool Died(Controller Killer, class<DamageType> damageType, vector HitLocation)
@@ -9,7 +9,7 @@ function bool Died(Controller Killer, class<DamageType> damageType, vector HitLo
 	if (bTesting)
 		return false;
 
-	ClientMessage("Shots neeed:"@ShotCount);
+	ClientMessage("Shots neeed:"@TestShotCount);
 	return super.Died(Killer, damageType, HitLocation);
 }
 
@@ -43,7 +43,7 @@ server reliable function ServerTestKill()
 	bTestProcessing = true;
 	while(Health > 0 && !bPlayedDeath)
 	{
-		ShotCount += 1;
+		TestShotCount += 1;
 		ServerTestShot();
 	}
 
@@ -158,6 +158,7 @@ function bool FinishedCase2VestThighs(array<string> FailedTests, int FailedCount
 	if (FailedTests.Length == 0)
 	{
 		PlayerController(Controller).ClientMessage("All Case-2-Vest-Thighs tests passed.");
+		return true;
 	}
 	else
 	{
@@ -165,6 +166,7 @@ function bool FinishedCase2VestThighs(array<string> FailedTests, int FailedCount
 		if (FailedTests.Length > 40) FailedTests.Length = 40;
 		JoinArray(FailedTests, s, "\n");
 		PlayerController(Controller).ClientMessage(s);
+		return false;
 	}
 }
 
