@@ -1,33 +1,34 @@
 class UT4DamagePointsHUD extends UTHUD;
 
 Const MAX_INT = 2147483647;
-Const MAX_MODES = 2;
+Const MAX_MODES = 3;
 
-/** 0: Minimal; 1: Shield */
+/** 0: Default; 1: Minimal; 2: Shield */
 var() int CurrentHudMode;
 var() bool MinimalBars;
 
-//var() float HealthBGOffsetX;   //position of the health bg relative to overall lower left position
-//var() float HealthBGOffsetY;
-//var() float HealthIconX;	   //position of the health + icon relative to the overall left position
-//var() float HealthIconY;
-//var() float HealthTextX;	  //position of the health text relative to the overall left position
-//var() float HealthTextY;
+var() float NewHealthOffsetX;
+var() float NewHealthBGOffsetX;   //position of the health bg relative to overall lower left position
+var() float NewHealthBGOffsetY;
+var() float NewHealthIconX;	   //position of the health + icon relative to the overall left position
+var() float NewHealthIconY;
+var() float NewHealthTextX;	  //position of the health text relative to the overall left position
+var() float NewHealthTextY;
 
-//var() float ArmorBGOffsetX;	//position of the armor bg relative to overall lower left position
-//var() float ArmorBGOffsetY;
-//var() float ArmorIconX;	   //position of the armor shield icon relative to the overall left position
-//var() float ArmorIconY;
-//var() float ArmorTextX;	   //position of the armor text relative to the overall left position
-//var() float ArmorTextY;
+var() float NewArmorBGOffsetX;	//position of the armor bg relative to overall lower left position
+var() float NewArmorBGOffsetY;
+var() float NewArmorIconX;	   //position of the armor shield icon relative to the overall left position
+var() float NewArmorIconY;
+var() float NewArmorTextX;	   //position of the armor text relative to the overall left position
+var() float NewArmorTextY;
 
-var() float HealthScaleX;
-var() float HealthScaleY;
-var() float HealthIconScale;
+var() float NewHealthScaleX;
+var() float NewHealthScaleY;
+var() float NewHealthIconScale;
 
-var() float ArmorScaleX;
-var() float ArmorScaleY;
-var() float ArmorIconScale;
+var() float NewArmorScaleX;
+var() float NewArmorScaleY;
+var() float NewArmorIconScale;
 
 var() TextureCoordinates ShieldBGCoords;
 var() float ShieldBGOffsetX;	//position of the armor bg relative to overall lower left position
@@ -92,8 +93,10 @@ exec function HudMode()
 function DisplayPawnDoll()
 {
 	if (CurrentHudMode == 0)
-		DisplayHudMinimal();
+		super.DisplayPawnDoll();
 	else if (CurrentHudMode == 1)
+		DisplayHudMinimal();
+	else if (CurrentHudMode == 2)
 		DisplayPawnDoll_NewShield();
 }
 
@@ -135,7 +138,7 @@ function DrawPawnDoll()
 	if ( DollVisibility > 0.0 )
 	{
 		POS = ResolveHudPosition(DollPosition,216, 115);
-		POS.X = POS.X + (DollVisibility - 1.0)*HealthOffsetX*ResolutionScale;
+		POS.X = POS.X + (DollVisibility - 1.0)*NewHealthOffsetX*ResolutionScale;
 
 		ScaledWhite = LC_White;
 		ScaledWhite.A = DollVisibility;
@@ -304,7 +307,7 @@ function DisplayPawnDoll_NewShield()
 	DrawPawnDoll();
 
 	POS = ResolveHudPosition(DollPosition,216, 115);
-	POS.X = POS.X + (DollVisibility - 1.0)*HealthOffsetX*ResolutionScale;
+	POS.X = POS.X + (DollVisibility - 1.0)*NewHealthOffsetX*ResolutionScale;
 	Canvas.DrawColor = WhiteColor;
 
 	ScaledWhite = LC_White;
@@ -314,9 +317,9 @@ function DisplayPawnDoll_NewShield()
 	ArmorAmount = UTPawnOwner.VestArmor + UTPawnOwner.HelmetArmor + UTPawnOwner.ThighpadArmor;
 
    	// Draw the Health Background
-	Canvas.SetPos(POS.X + HealthBGOffsetX * ResolutionScale * HealthScaleX, POS.Y + HealthBGOffsetY * ResolutionScale * HealthScaleY);
+	Canvas.SetPos(POS.X + NewHealthBGOffsetX * ResolutionScale * NewHealthScaleX, POS.Y + NewHealthBGOffsetY * ResolutionScale * NewHealthScaleY);
 	
-	Canvas.DrawColorizedTile(AltHudTexture, HealthBGCoords.UL * ResolutionScale * HealthScaleX, HealthBGCoords.VL * ResolutionScale * HealthScaleY, HealthBGCoords.U, HealthBGCoords.V, HealthBGCoords.UL, HealthBGCoords.VL, ProtectedHUDColor);
+	Canvas.DrawColorizedTile(AltHudTexture, HealthBGCoords.UL * ResolutionScale * NewHealthScaleX, HealthBGCoords.VL * ResolutionScale * NewHealthScaleY, HealthBGCoords.U, HealthBGCoords.V, HealthBGCoords.UL, HealthBGCoords.VL, ProtectedHUDColor);
 	Canvas.DrawColor = WhiteColor;
 	if (ShieldAmount > 0) Canvas.DrawColor.A = HealthAlphaWithShield;
 
@@ -331,14 +334,14 @@ function DisplayPawnDoll_NewShield()
 	LastHealth = Health;
 
 	Amount = (Health > 0) ? ""$Health : "0";
-	DrawGlowText(Amount, POS.X + HealthTextX * ResolutionScale, POS.Y + HealthTextY * ResolutionScale, 60 * ResolutionScale * HealthScaleY, HealthPulseTime,true);
+	DrawGlowText(Amount, POS.X + NewHealthTextX * ResolutionScale, POS.Y + NewHealthTextY * ResolutionScale, 60 * ResolutionScale * NewHealthScaleY, HealthPulseTime,true);
 
 	// restore color
 	Canvas.DrawColor = WhiteColor;
 
 	// Draw the Health Icon
-	Canvas.SetPos(POS.X + HealthIconX * ResolutionScale, POS.Y + HealthIconY * ResolutionScale);
-	DrawTileCentered(AltHudTexture, 42 * ResolutionScale * HealthIconScale , 30 * ResolutionScale * HealthIconScale, 216, 102, 56, 40, LC_White);
+	Canvas.SetPos(POS.X + NewHealthIconX * ResolutionScale, POS.Y + NewHealthIconY * ResolutionScale);
+	DrawTileCentered(AltHudTexture, 42 * ResolutionScale * NewHealthIconScale , 30 * ResolutionScale * NewHealthIconScale, 216, 102, 56, 40, LC_White);
 
 	// Only Draw the Armor if there is any
 	// TODO - Add fading
@@ -354,21 +357,21 @@ function DisplayPawnDoll_NewShield()
 		if (ShieldAmount > 0) Canvas.DrawColor.A = HealthAlphaWithShield;
 
     	// Draw the Armor Background
-		Canvas.SetPos(POS.X + ArmorBGOffsetX * ResolutionScale,POS.Y + ArmorBGOffsetY * ResolutionScale);
-		Canvas.DrawColorizedTile(AltHudTexture, ArmorBGCoords.UL * ResolutionScale * ArmorScaleX, ArmorBGCoords.VL * ResolutionScale * ArmorScaleY, ArmorBGCoords.U, ArmorBGCoords.V, ArmorBGCoords.UL, ArmorBGCoords.VL, ProtectedHUDColor);
+		Canvas.SetPos(POS.X + NewArmorBGOffsetX * ResolutionScale,POS.Y + NewArmorBGOffsetY * ResolutionScale);
+		Canvas.DrawColorizedTile(AltHudTexture, ArmorBGCoords.UL * ResolutionScale * NewArmorScaleX, ArmorBGCoords.VL * ResolutionScale * NewArmorScaleY, ArmorBGCoords.U, ArmorBGCoords.V, ArmorBGCoords.UL, ArmorBGCoords.VL, ProtectedHUDColor);
 		//Canvas.DrawColorizedTile(AltHudTexture, ArmorBGCoords.UL * ResolutionScale, ArmorBGCoords.VL * ResolutionScale, ArmorBGCoords.U, ArmorBGCoords.V, ArmorBGCoords.UL, ArmorBGCoords.VL, ScaledTeamHudColor);
 		//Canvas.DrawColor = WhiteColor;
 		//Canvas.DrawColor.A = 255.0 * DollVisibility;
 
 		// Draw the Armor Text
-		DrawGlowText(""$INT(ArmorAmount), POS.X + ArmorTextX * ResolutionScale * ArmorScaleX, POS.Y + ArmorTextY * ResolutionScale * ArmorScaleY, 45 * ResolutionScale * ArmorScaleY, ArmorPulseTime,true);
+		DrawGlowText(""$INT(ArmorAmount), POS.X + NewArmorTextX * ResolutionScale * NewArmorScaleX, POS.Y + NewArmorTextY * ResolutionScale * NewArmorScaleY, 45 * ResolutionScale * NewArmorScaleY, ArmorPulseTime,true);
 
 		// restore color
 		Canvas.DrawColor = WhiteColor;
 
 		// Draw the Armor Icon
-		Canvas.SetPos(POS.X + ArmorIconX * ResolutionScale, POS.Y + ArmorIconY * ResolutionScale);
-		DrawTileCentered(AltHudTexture, (33 * ResolutionScale) * ArmorIconScale, (24 * ResolutionScale) * ArmorIconScale, 225, 68, 42, 32, ScaledWhite);
+		Canvas.SetPos(POS.X + NewArmorIconX * ResolutionScale, POS.Y + NewArmorIconY * ResolutionScale);
+		DrawTileCentered(AltHudTexture, (33 * ResolutionScale) * NewArmorIconScale, (24 * ResolutionScale) * NewArmorIconScale, 225, 68, 42, 32, ScaledWhite);
 	}
 
 	// Only Draw the Shield if there is any
@@ -404,31 +407,31 @@ function DisplayPawnDoll_NewShield()
 
 DefaultProperties
 {
-	CurrentHudMode=0
+	CurrentHudMode=1
 	MinimalBars=true
 
-	HealthOffsetX=65
-	HealthBGOffsetX=64
-	HealthBGOffsetY=86
-	HealthIconX=88
-	HealthIconY=92
-	HealthTextX=176
-	HealthTextY=65
+	NewHealthOffsetX=65
+	NewHealthBGOffsetX=64
+	NewHealthBGOffsetY=86
+	NewHealthIconX=88
+	NewHealthIconY=92
+	NewHealthTextX=176
+	NewHealthTextY=65
 
-	HealthScaleX=0.97
-	HealthScaleY=0.8
-	HealthIconScale=1.0
+	NewHealthScaleX=0.97
+	NewHealthScaleY=0.8
+	NewHealthIconScale=1.0
 
-	ArmorBGOffsetX=64
-	ArmorBGOffsetY=35
-	ArmorIconX=87
-	ArmorIconY=56
-	ArmorTextX=147
-	ArmorTextY=33
+	NewArmorBGOffsetX=64
+	NewArmorBGOffsetY=35
+	NewArmorIconX=87
+	NewArmorIconY=56
+	NewArmorTextX=147
+	NewArmorTextY=33
 
-	ArmorScaleX=1.2
-	ArmorScaleY=1.0
-	ArmorIconScale=1.0
+	NewArmorScaleX=1.2
+	NewArmorScaleY=1.0
+	NewArmorIconScale=1.0
 
 	ShieldBGOffsetX=65
 	ShieldBGOffsetY=-4
