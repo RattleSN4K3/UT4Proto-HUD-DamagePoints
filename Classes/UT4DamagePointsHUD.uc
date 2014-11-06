@@ -3,6 +3,11 @@ class UT4DamagePointsHUD extends UTHUD;
 Const MAX_INT = 2147483647;
 Const MAX_MODES = 3;
 
+var const linearcolor BronzeLinearColor;
+
+/** Cached reference to the another hud texture */
+var const Texture2D AltHudTextureGray;
+
 /** 0: Default; 1: Minimal; 2: Shield */
 var() int CurrentHudMode;
 var() bool MinimalBars;
@@ -114,12 +119,24 @@ function DisplayHudMinimal()
 	DrawMinimal(AmountDamagePoints, AmountHealth, AmountArmor, AmountShield);
 }
 
+function LinearColor GetScaledArmorColor(int ArmorValue, float MaxArmor)
+{
+	if (ArmorValue == 0)
+		return MakeLinearColor(1.0,1.0,1.0,0.0); // transparent
+	if (ArmorValue >= MaxArmor)
+		return GoldLinearColor;
+	else if (ArmorValue >= 0.5*MaxArmor)
+		return SilverLinearColor;
+	else
+		return BronzeLinearColor;
+}
+
 function DrawPawnDoll()
 {
 	local vector2d POS;
 	local float xl,yl;
 	local float ArmorAmount;
-	local linearcolor ScaledWhite, ScaledTeamHUDColor;
+	local linearcolor ScaledWhite, ScaledTeamHUDColor, ArmorColor;
 
 	// should doll be visible?	
 	ArmorAmount = UTPawnOwner.ShieldBeltArmor + UTPawnOwner.VestArmor + UTPawnOwner.HelmetArmor + UTPawnOwner.ThighpadArmor;
@@ -164,20 +181,26 @@ function DrawPawnDoll()
 
 		if ( UTPawnOwner.VestArmor > 0.0f )
 		{
+			ArmorColor = GetScaledArmorColor(UTPawnOwner.VestArmor, class'UTArmorPickup_Vest'.default.ShieldAmount);
+			ArmorColor.A = ScaledWhite.A;
 			Canvas.SetPos(POS.X + (VestX * ResolutionScale), POS.Y + (VestY * ResolutionScale));
-			DrawTileCentered(AltHudTexture, VestWidth * ResolutionScale, VestHeight * ResolutionScale, 132, 220, 46, 28, ScaledWhite);
+			DrawTileCentered(AltHudTextureGray, VestWidth * ResolutionScale, VestHeight * ResolutionScale, 132, 220, 46, 28, ArmorColor);
 		}
 
 		if (UTPawnOwner.ThighpadArmor > 0.0f )
 		{
+			ArmorColor = GetScaledArmorColor(UTPawnOwner.ThighpadArmor, class'UTArmorPickup_Thighpads'.default.ShieldAmount);
+			ArmorColor.A = ScaledWhite.A;
 			Canvas.SetPos(POS.X + (ThighX * ResolutionScale), POS.Y + (ThighY * ResolutionScale));
-			DrawTileCentered(AltHudTexture, ThighWidth * ResolutionScale, ThighHeight * ResolutionScale, 134, 263, 42, 28, ScaledWhite);
+			DrawTileCentered(AltHudTextureGray, ThighWidth * ResolutionScale, ThighHeight * ResolutionScale, 134, 263, 42, 28, ArmorColor);
 		}
 
 		if (UTPawnOwner.HelmetArmor > 0.0f )
 		{
+			ArmorColor = GetScaledArmorColor(UTPawnOwner.HelmetArmor, class'UTArmorPickup_Helmet'.default.ShieldAmount);
+			ArmorColor.A = ScaledWhite.A;
 			Canvas.SetPos(POS.X + (HelmetX * ResolutionScale), POS.Y + (HelmetY * ResolutionScale));
-			DrawTileCentered(AltHudTexture, HelmetHeight * ResolutionScale, HelmetWidth * ResolutionScale, 193, 265, 22, 25, ScaledWhite);
+			DrawTileCentered(AltHudTextureGray, HelmetHeight * ResolutionScale, HelmetWidth * ResolutionScale, 193, 265, 22, 25, ArmorColor);
 		}
 
 		if (UTPawnOwner.JumpBootCharge > 0 )
@@ -409,6 +432,10 @@ DefaultProperties
 {
 	CurrentHudMode=1
 	MinimalBars=true
+
+	AltHudTextureGray=Texture2D'UT4Proto_HUDDamagePointsContent.HUD.UI_HUD_BaseA_Gray'
+
+	BronzeLinearColor=(R=0.615686,G=0.3843137,B=0.1490196,A=1.0)
 
 	NewHealthOffsetX=65
 	NewHealthBGOffsetX=64
