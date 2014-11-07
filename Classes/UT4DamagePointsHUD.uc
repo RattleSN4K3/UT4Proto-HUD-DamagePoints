@@ -435,7 +435,7 @@ DefaultProperties
 
 	AltHudTextureGray=Texture2D'UT4Proto_HUDDamagePointsContent.HUD.UI_HUD_BaseA_Gray'
 
-	BronzeLinearColor=(R=0.615686,G=0.3843137,B=0.1490196,A=1.0)
+	BronzeLinearColor=(R=0.27,G=0.17,B=0.06,A=1.0)
 
 	NewHealthOffsetX=65
 	NewHealthBGOffsetX=64
