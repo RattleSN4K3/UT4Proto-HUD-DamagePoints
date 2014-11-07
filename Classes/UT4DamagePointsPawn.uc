@@ -30,6 +30,36 @@ exec function TestSetHealth(int InHealth, int InVest, int InThigh, int InHelmt, 
 	HelmetArmor = InHelmt;
 }
 
+exec function TestSetBoots(int Charges)
+{
+	ServerTestSetBoots(Charges);
+}
+
+server reliable function ServerTestSetBoots(int Charges)
+{
+	local Inventory Inv;
+	
+	Inv = FindInventoryType(class'UTJumpBoots', true);
+	if (Inv == none && Charges > 0)
+	{
+		Inv = Spawn(class'UTJumpBoots');
+		UTJumpBoots(Inv).Charges = Charges;
+		InvManager.AddInventory(inv);
+	}
+	else if (Inv != none)
+	{
+		if (Charges > 0)
+		{
+			UTJumpBoots(Inv).Charges = Charges;
+			if (WorldInfo.NetMode != NM_DedicatedServer) UTJumpBoots(Inv).ReplicatedEvent('Charges');
+		}
+		else
+		{
+			InvManager.RemoveFromInventory(Inv);
+		}
+	}
+}
+
 exec function TestKill()
 {
 	ServerTestKill();

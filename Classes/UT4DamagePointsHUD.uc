@@ -13,6 +13,8 @@ var() int CurrentHudMode;
 var() bool MinimalBars;
 var() bool MinimalSingle;
 
+var() bool MinimalColorCodedJumpBoots;
+
 var() float NewHealthOffsetX;
 var() float NewHealthBGOffsetX;   //position of the health bg relative to overall lower left position
 var() float NewHealthBGOffsetY;
@@ -96,6 +98,12 @@ exec function HudMinimalSingle()
 	PlayerOwner.ClientMessage("Minimal single:"@MinimalSingle);
 }
 
+exec function HudMinimalColorBoots()
+{
+	MinimalColorCodedJumpBoots = !MinimalColorCodedJumpBoots;
+	PlayerOwner.ClientMessage("Minimal colored JumpBoots:"@MinimalColorCodedJumpBoots);
+}
+
 exec function HudMode()
 {
 	CurrentHudMode = (CurrentHudMode + 1) % MAX_MODES;
@@ -126,13 +134,13 @@ function DisplayHudMinimal()
 	DrawMinimal(AmountDamagePoints, AmountHealth, AmountArmor, AmountShield);
 }
 
-function LinearColor GetScaledArmorColor(int ArmorValue, float MaxArmor)
+function LinearColor GetScaledColorCode(int CurrentValue, float MaxValue)
 {
-	if (ArmorValue == 0)
+	if (CurrentValue == 0)
 		return MakeLinearColor(1.0,1.0,1.0,0.0); // transparent
-	if (ArmorValue >= MaxArmor)
+	if (CurrentValue >= MaxValue)
 		return GoldLinearColor;
-	else if (ArmorValue >= 0.5*MaxArmor)
+	else if (CurrentValue >= 0.5*MaxValue)
 		return SilverLinearColor;
 	else
 		return BronzeLinearColor;
@@ -143,7 +151,8 @@ function DrawPawnDoll()
 	local vector2d POS;
 	local float xl,yl;
 	local float ArmorAmount;
-	local linearcolor ScaledWhite, ScaledTeamHUDColor, ArmorColor;
+	local linearcolor ScaledWhite, ScaledTeamHUDColor, ColorCode;
+	local Texture2D TempHudTexture;
 
 	// should doll be visible?	
 	ArmorAmount = UTPawnOwner.ShieldBeltArmor + UTPawnOwner.VestArmor + UTPawnOwner.HelmetArmor + UTPawnOwner.ThighpadArmor;
@@ -188,32 +197,36 @@ function DrawPawnDoll()
 
 		if ( UTPawnOwner.VestArmor > 0.0f )
 		{
-			ArmorColor = GetScaledArmorColor(UTPawnOwner.VestArmor, class'UTArmorPickup_Vest'.default.ShieldAmount);
-			ArmorColor.A = ScaledWhite.A;
+			ColorCode = GetScaledColorCode(UTPawnOwner.VestArmor, class'UTArmorPickup_Vest'.default.ShieldAmount);
+			ColorCode.A = ScaledWhite.A;
 			Canvas.SetPos(POS.X + (VestX * ResolutionScale), POS.Y + (VestY * ResolutionScale));
-			DrawTileCentered(AltHudTextureGray, VestWidth * ResolutionScale, VestHeight * ResolutionScale, 132, 220, 46, 28, ArmorColor);
+			DrawTileCentered(AltHudTextureGray, VestWidth * ResolutionScale, VestHeight * ResolutionScale, 132, 220, 46, 28, ColorCode);
 		}
 
 		if (UTPawnOwner.ThighpadArmor > 0.0f )
 		{
-			ArmorColor = GetScaledArmorColor(UTPawnOwner.ThighpadArmor, class'UTArmorPickup_Thighpads'.default.ShieldAmount);
-			ArmorColor.A = ScaledWhite.A;
+			ColorCode = GetScaledColorCode(UTPawnOwner.ThighpadArmor, class'UTArmorPickup_Thighpads'.default.ShieldAmount);
+			ColorCode.A = ScaledWhite.A;
 			Canvas.SetPos(POS.X + (ThighX * ResolutionScale), POS.Y + (ThighY * ResolutionScale));
-			DrawTileCentered(AltHudTextureGray, ThighWidth * ResolutionScale, ThighHeight * ResolutionScale, 134, 263, 42, 28, ArmorColor);
+			DrawTileCentered(AltHudTextureGray, ThighWidth * ResolutionScale, ThighHeight * ResolutionScale, 134, 263, 42, 28, ColorCode);
 		}
 
 		if (UTPawnOwner.HelmetArmor > 0.0f )
 		{
-			ArmorColor = GetScaledArmorColor(UTPawnOwner.HelmetArmor, class'UTArmorPickup_Helmet'.default.ShieldAmount);
-			ArmorColor.A = ScaledWhite.A;
+			ColorCode = GetScaledColorCode(UTPawnOwner.HelmetArmor, class'UTArmorPickup_Helmet'.default.ShieldAmount);
+			ColorCode.A = ScaledWhite.A;
 			Canvas.SetPos(POS.X + (HelmetX * ResolutionScale), POS.Y + (HelmetY * ResolutionScale));
-			DrawTileCentered(AltHudTextureGray, HelmetHeight * ResolutionScale, HelmetWidth * ResolutionScale, 193, 265, 22, 25, ArmorColor);
+			DrawTileCentered(AltHudTextureGray, HelmetHeight * ResolutionScale, HelmetWidth * ResolutionScale, 193, 265, 22, 25, ColorCode);
 		}
 
 		if (UTPawnOwner.JumpBootCharge > 0 )
 		{
+			ColorCode = MinimalColorCodedJumpBoots ? GetScaledColorCode(UTPawnOwner.JumpBootCharge, class'UTJumpBoots'.default.Charges) : ScaledWhite;
+			ColorCode.A = ScaledWhite.A;
+			TempHudTexture = MinimalColorCodedJumpBoots ? AltHudTextureGray : AltHudTexture;
+
 			Canvas.SetPos(POS.X + BootX*ResolutionScale, POS.Y + BootY*ResolutionScale);
-			DrawTileCentered(AltHudTexture, BootWidth * ResolutionScale, BootHeight * ResolutionScale, 222, 263, 54, 26, ScaledWhite);
+			DrawTileCentered(TempHudTexture, BootWidth * ResolutionScale, BootHeight * ResolutionScale, 222, 263, 54, 26, ColorCode);
 
 			Canvas.Strlen(string(UTPawnOwner.JumpBootCharge),XL,YL);
 			Canvas.SetPos(POS.X + (BootX-1)*ResolutionScale - 0.5*XL, POS.Y + (BootY+3)*ResolutionScale - 0.5*YL);
