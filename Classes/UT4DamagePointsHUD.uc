@@ -10,7 +10,9 @@ var const Texture2D AltHudTextureGray;
 
 /** 0: Default; 1: Minimal; 2: Shield */
 var() int CurrentHudMode;
-var() bool MinimalBars;
+var() bool MinimalBarHealth;
+var() bool MinimalBarArmor;
+var() bool MinimalBarBelt;
 var() bool MinimalSingle;
 
 var() bool MinimalColorCodedArmor;
@@ -88,10 +90,31 @@ var() float MiniBarDamageTextX;
 var() float MiniBarDamageSize;
 var() float MiniBarDamageOffest;
 
-exec function HudMinimalBars()
+exec function HudMinimalBars(bool bOn)
 {
-	MinimalBars = !MinimalBars;
-	PlayerOwner.ClientMessage("Minimal bars:"@MinimalBars);
+	MinimalBarHealth = bOn;
+	MinimalBarArmor = bOn;
+	MinimalBarBelt = bOn;
+
+	PlayerOwner.ClientMessage("Minimal bars:"@bOn);
+}
+
+exec function HudMinimalBarHealth()
+{
+	MinimalBarHealth = !MinimalBarHealth;
+	PlayerOwner.ClientMessage("Minimal bar for Health:"@MinimalBarHealth);
+}
+
+exec function HudMinimalBarArmor()
+{
+	MinimalBarArmor = !MinimalBarArmor;
+	PlayerOwner.ClientMessage("Minimal bar for Armor:"@MinimalBarArmor);
+}
+
+exec function HudMinimalBarBelt()
+{
+	MinimalBarBelt = !MinimalBarBelt;
+	PlayerOwner.ClientMessage("Minimal bar for Belt:"@MinimalBarBelt);
 }
 
 exec function HudMinimalSingle()
@@ -286,7 +309,7 @@ function DrawMinimal(int InDP, int InHP, int InAP, int InSP)
 		BarWidth = MiniBarDamageTextX * ResolutionScale;
 		BarTop = Canvas.ClipY;
 
-		if (MinimalBars)
+		if (MinimalBarHealth)
 		{
 			BarTop -= BarHeight;
 
@@ -300,43 +323,40 @@ function DrawMinimal(int InDP, int InHP, int InAP, int InSP)
 		BarTop -= (MiniBarDamageSize+MiniBarDamageOffest) * ResolutionScale;
 		DrawGlowText(""$InDP, POS.X + MiniBarDamageTextX * ResolutionScale, BarTop, MinimalDamageSize * ResolutionScale, DamagePulseTime, true);
 
-		if (MinimalBars)
+		if (InAP > 0 && MinimalBarArmor)
 		{
-			if (InAP > 0)
-			{
-				CurrentValue = UTPawnOwner.VestArmor+UTPawnOwner.ThighpadArmor+UTPawnOwner.HelmetArmor;
-				MaxValue = 0;
-				if (UTPawnOwner.VestArmor > 0) MaxValue += class'UTArmorPickup_Vest'.default.ShieldAmount;
-				if (UTPawnOwner.ThighpadArmor > 0) MaxValue += class'UTArmorPickup_Thighpads'.default.ShieldAmount;
-				if (UTPawnOwner.HelmetArmor > 0) MaxValue += class'UTArmorPickup_Helmet'.default.ShieldAmount;
+			CurrentValue = UTPawnOwner.VestArmor+UTPawnOwner.ThighpadArmor+UTPawnOwner.HelmetArmor;
+			MaxValue = 0;
+			if (UTPawnOwner.VestArmor > 0) MaxValue += class'UTArmorPickup_Vest'.default.ShieldAmount;
+			if (UTPawnOwner.ThighpadArmor > 0) MaxValue += class'UTArmorPickup_Thighpads'.default.ShieldAmount;
+			if (UTPawnOwner.HelmetArmor > 0) MaxValue += class'UTArmorPickup_Helmet'.default.ShieldAmount;
 			
-				PercValue = float(CurrentValue)/float(MaxValue);
+			PercValue = float(CurrentValue)/float(MaxValue);
 
-				C = Default.GrayColor;
-				C.B = 16;
-				C = 1.4*C; 
-				if (PercValue < 0.4 )
-				{
-					C.G = 80;
-				}
-
-				BarTop -= BarHeight*0.5; // only half the size due to the glow text
-				DrawBarGraph( POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas, C, default.GrayColor);
+			C = Default.GrayColor;
+			C.B = 16;
+			C = 1.4*C; 
+			if (PercValue < 0.4 )
+			{
+				C.G = 80;
 			}
 
-			if (InSP > 0)
-			{
-				BarTop -= BarHeight;
-				CurrentValue = UTPawnOwner.ShieldBeltArmor;
-				MaxValue = class'UTArmorPickup_ShieldBelt'.default.ShieldAmount;
+			BarTop -= BarHeight*0.5; // only half the size due to the glow text
+			DrawBarGraph( POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas, C, default.GrayColor);
+		}
+
+		if (InSP > 0 && MinimalBarBelt)
+		{
+			BarTop -= BarHeight;
+			CurrentValue = UTPawnOwner.ShieldBeltArmor;
+			MaxValue = class'UTArmorPickup_ShieldBelt'.default.ShieldAmount;
 			
-				PercValue = float(CurrentValue)/float(MaxValue);
-				C = MakeColor(128,128,255, 255);
+			PercValue = float(CurrentValue)/float(MaxValue);
+			C = MakeColor(128,128,255, 255);
 			
-				DrawBarGraph(POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas, C, default.GrayColor);
-				//DrawHealth( POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas);
-				BarTop -= BarHeight;
-			}
+			DrawBarGraph(POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas, C, default.GrayColor);
+			//DrawHealth( POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas);
+			BarTop -= BarHeight;
 		}
 	}
 	else
@@ -478,7 +498,9 @@ function DisplayPawnDoll_NewShield()
 DefaultProperties
 {
 	CurrentHudMode=1
-	MinimalBars=true
+	MinimalBarHealth=true
+	MinimalBarArmor=true
+	MinimalBarBelt=true
 	MinimalColorCodedArmor=true
 	MinimalColorCodedBelt=false
 	MinimalColorCodedJumpBoots=false
