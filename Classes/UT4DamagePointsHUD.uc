@@ -14,6 +14,7 @@ var() bool MinimalBars;
 var() bool MinimalSingle;
 
 var() bool MinimalColorCodedArmor;
+var() bool MinimalColorCodedBelt;
 var() bool MinimalColorCodedJumpBoots;
 
 var() float NewHealthOffsetX;
@@ -105,6 +106,12 @@ exec function HudMinimalColorArmor()
 	PlayerOwner.ClientMessage("Minimal colored Armor parts:"@MinimalColorCodedArmor);
 }
 
+exec function HudMinimalColorBelt()
+{
+	MinimalColorCodedBelt = !MinimalColorCodedBelt;
+	PlayerOwner.ClientMessage("Minimal colored Belt:"@MinimalColorCodedBelt);
+}
+
 exec function HudMinimalColorBoots()
 {
 	MinimalColorCodedJumpBoots = !MinimalColorCodedJumpBoots;
@@ -141,13 +148,13 @@ function DisplayHudMinimal()
 	DrawMinimal(AmountDamagePoints, AmountHealth, AmountArmor, AmountShield);
 }
 
-function LinearColor GetScaledColorCode(int CurrentValue, float MaxValue)
+function LinearColor GetScaledColorCode(int CurrentValue, float MaxValue, optional float CustomEdgeGold, optional float CustomEdgeSilver)
 {
 	if (CurrentValue == 0)
 		return MakeLinearColor(1.0,1.0,1.0,0.0); // transparent
-	if (CurrentValue >= MaxValue)
+	if (CurrentValue >= (CustomEdgeGold != 0.0 ? CustomEdgeGold : 1.0)*MaxValue)
 		return GoldLinearColor;
-	else if (CurrentValue >= 0.5*MaxValue)
+	else if (CurrentValue >= (CustomEdgeSilver != 0.0 ? CustomEdgeSilver : 0.5)*MaxValue)
 		return SilverLinearColor;
 	else
 		return BronzeLinearColor;
@@ -195,7 +202,11 @@ function DrawPawnDoll()
 		Canvas.SetPos(POS.X + (DollOffsetX * ResolutionScale), POS.Y + (DollOffsetY * ResolutionScale));
 		if ( UTPawnOwner.ShieldBeltArmor > 0.0f )
 		{
-			DrawTileCentered(AltHudTexture, DollWidth * ResolutionScale, DollHeight * ResolutionScale, 71, 224, 56, 109,ScaledWhite);
+			ColorCode = MinimalColorCodedBelt ? GetScaledColorCode(UTPawnOwner.ShieldBeltArmor, class'UTArmorPickup_ShieldBelt'.default.ShieldAmount, 1.0, 0.2) : ScaledWhite;
+			ColorCode.A = ScaledWhite.A;
+			TempHudTexture = MinimalColorCodedBelt ? AltHudTextureGray : AltHudTexture;
+			
+			DrawTileCentered(TempHudTexture, DollWidth * ResolutionScale, DollHeight * ResolutionScale, 71, 224, 56, 109, ColorCode);
 		}
 		else
 		{
@@ -469,6 +480,7 @@ DefaultProperties
 	CurrentHudMode=1
 	MinimalBars=true
 	MinimalColorCodedArmor=true
+	MinimalColorCodedBelt=false
 	MinimalColorCodedJumpBoots=false
 
 	AltHudTextureGray=Texture2D'UT4Proto_HUDDamagePointsContent.HUD.UI_HUD_BaseA_Gray'
