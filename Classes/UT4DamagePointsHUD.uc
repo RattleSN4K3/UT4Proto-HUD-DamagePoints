@@ -14,6 +14,7 @@ var() bool MinimalBarHealth;
 var() bool MinimalBarArmor;
 var() bool MinimalBarBelt;
 var() bool MinimalSingle;
+var() bool MinimalIconHealth;
 
 var() bool MinimalColorCodedArmor;
 var() bool MinimalColorCodedBelt;
@@ -71,6 +72,7 @@ var() float MinimalHealthTextY;
 var() float MinimalHealthScaleX;
 var() float MinimalHealthScaleY;
 var() float MinimalHealthSize;
+var() float MinimalHealthIconX;
 
 var() float MinimalArmorTextX;
 var() float MinimalArmorTextY;
@@ -139,6 +141,12 @@ exec function HudMinimalColorBoots()
 {
 	MinimalColorCodedJumpBoots = !MinimalColorCodedJumpBoots;
 	PlayerOwner.ClientMessage("Minimal colored JumpBoots:"@MinimalColorCodedJumpBoots);
+}
+
+exec function HudMinimalIconHealth()
+{
+	MinimalIconHealth = !MinimalIconHealth;
+	PlayerOwner.ClientMessage("Minimal Icon for Health:"@MinimalIconHealth);
 }
 
 exec function HudMode()
@@ -282,7 +290,7 @@ function DrawMinimal(int InDP, int InHP, int InAP, int InSP)
 	local vector2d POS;
 	local int Health, CurrentValue, MaxValue;
 	local string Amount;
-	local float BarWidth, PercValue, BarHeight, BarTop;
+	local float BarWidth, PercValue, BarHeight, BarTop, OffsetX;
 	local Color C;
 
 	Canvas.DrawColor = WhiteColor;
@@ -309,6 +317,17 @@ function DrawMinimal(int InDP, int InHP, int InAP, int InSP)
 		BarWidth = MiniBarDamageTextX * ResolutionScale;
 		BarTop = Canvas.ClipY;
 
+		OffsetX = 0;
+		if (MinimalIconHealth)
+		{
+			// Draw the Health Icon
+			OffsetX += 36 * ResolutionScale;
+			Canvas.SetPos(POS.X + MinimalHealthIconX * ResolutionScale, BarTop - BarHeight - 20 * ResolutionScale);
+			DrawTileCentered(AltHudTexture, 42 * ResolutionScale , 30 * ResolutionScale, 216, 102, 56, 40, LC_White);
+
+			BarWidth += OffsetX;
+		}
+
 		if (MinimalBarHealth)
 		{
 			BarTop -= BarHeight;
@@ -321,7 +340,7 @@ function DrawMinimal(int InDP, int InHP, int InAP, int InSP)
 
 		Canvas.DrawColor = WhiteColor;
 		BarTop -= (MiniBarDamageSize+MiniBarDamageOffest) * ResolutionScale;
-		DrawGlowText(""$InDP, POS.X + MiniBarDamageTextX * ResolutionScale, BarTop, MinimalDamageSize * ResolutionScale, DamagePulseTime, true);
+		DrawGlowText(""$InDP, POS.X + MiniBarDamageTextX * ResolutionScale + OffsetX, BarTop, MinimalDamageSize * ResolutionScale, DamagePulseTime, true);
 
 		if (InAP > 0 && MinimalBarArmor)
 		{
@@ -504,6 +523,7 @@ DefaultProperties
 	MinimalColorCodedArmor=true
 	MinimalColorCodedBelt=false
 	MinimalColorCodedJumpBoots=false
+	MinimalIconHealth=false
 
 	AltHudTextureGray=Texture2D'UT4Proto_HUDDamagePointsContent.HUD.UI_HUD_BaseA_Gray'
 
@@ -553,6 +573,7 @@ DefaultProperties
 	MinimalHealthScaleX=1.0
 	MinimalHealthScaleY=1.0
 	MinimalHealthSize=28
+	MinimalHealthIconX=20
 	
 	MinimalArmorTextX=140
 	MinimalArmorTextY=71
