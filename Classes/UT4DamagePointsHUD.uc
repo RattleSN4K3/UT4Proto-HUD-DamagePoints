@@ -11,6 +11,7 @@ var const Texture2D AltHudTextureGray;
 /** 0: Default; 1: Minimal; 2: Shield */
 var() int CurrentHudMode;
 var() bool MinimalBars;
+var() bool MinimalSingle;
 
 var() float NewHealthOffsetX;
 var() float NewHealthBGOffsetX;   //position of the health bg relative to overall lower left position
@@ -87,6 +88,12 @@ exec function HudMinimalBars()
 {
 	MinimalBars = !MinimalBars;
 	PlayerOwner.ClientMessage("Minimal bars:"@MinimalBars);
+}
+
+exec function HudMinimalSingle()
+{
+	MinimalSingle = !MinimalSingle;
+	PlayerOwner.ClientMessage("Minimal single:"@MinimalSingle);
 }
 
 exec function HudMode()
@@ -241,55 +248,63 @@ function DrawMinimal(int InDP, int InHP, int InAP, int InSP)
 
 	Amount = (Health > 0) ? ""$Health : "0";
 
-	if (MinimalBars)
+	if (!MinimalSingle)
 	{
 		BarHeight = MiniBarHeight * ResolutionScale;
 		BarWidth = MiniBarDamageTextX * ResolutionScale;
-		BarTop = Canvas.ClipY - BarHeight;
+		BarTop = Canvas.ClipY;
 
-		// health
-		PercValue = float(Health)/float(UTPawnOwner.HealthMax);
-		//BarWidth = 70 * ResolutionScale;
-		DrawHealth( POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas);
+		if (MinimalBars)
+		{
+			BarTop -= BarHeight;
+
+			// health
+			PercValue = float(Health)/float(UTPawnOwner.HealthMax);
+			//BarWidth = 70 * ResolutionScale;
+			DrawHealth( POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas);
+		}
 
 		Canvas.DrawColor = WhiteColor;
 		BarTop -= (MiniBarDamageSize+MiniBarDamageOffest) * ResolutionScale;
 		DrawGlowText(""$InDP, POS.X + MiniBarDamageTextX * ResolutionScale, BarTop, MinimalDamageSize * ResolutionScale, DamagePulseTime, true);
 
-		if (InAP > 0)
+		if (MinimalBars)
 		{
-			CurrentValue = UTPawnOwner.VestArmor+UTPawnOwner.ThighpadArmor+UTPawnOwner.HelmetArmor;
-			MaxValue = 0;
-			if (UTPawnOwner.VestArmor > 0) MaxValue += class'UTArmorPickup_Vest'.default.ShieldAmount;
-			if (UTPawnOwner.ThighpadArmor > 0) MaxValue += class'UTArmorPickup_Thighpads'.default.ShieldAmount;
-			if (UTPawnOwner.HelmetArmor > 0) MaxValue += class'UTArmorPickup_Helmet'.default.ShieldAmount;
-			
-			PercValue = float(CurrentValue)/float(MaxValue);
-
-			C = Default.GrayColor;
-			C.B = 16;
-			C = 1.4*C; 
-			if (PercValue < 0.4 )
+			if (InAP > 0)
 			{
-				C.G = 80;
+				CurrentValue = UTPawnOwner.VestArmor+UTPawnOwner.ThighpadArmor+UTPawnOwner.HelmetArmor;
+				MaxValue = 0;
+				if (UTPawnOwner.VestArmor > 0) MaxValue += class'UTArmorPickup_Vest'.default.ShieldAmount;
+				if (UTPawnOwner.ThighpadArmor > 0) MaxValue += class'UTArmorPickup_Thighpads'.default.ShieldAmount;
+				if (UTPawnOwner.HelmetArmor > 0) MaxValue += class'UTArmorPickup_Helmet'.default.ShieldAmount;
+			
+				PercValue = float(CurrentValue)/float(MaxValue);
+
+				C = Default.GrayColor;
+				C.B = 16;
+				C = 1.4*C; 
+				if (PercValue < 0.4 )
+				{
+					C.G = 80;
+				}
+
+				BarTop -= BarHeight*0.5; // only half the size due to the glow text
+				DrawBarGraph( POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas, C, default.GrayColor);
 			}
 
-			BarTop -= BarHeight*0.5; // only half the size due to the glow text
-			DrawBarGraph( POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas, C, default.GrayColor);
-		}
-
-		if (InSP > 0)
-		{
-			BarTop -= BarHeight;
-			CurrentValue = UTPawnOwner.ShieldBeltArmor;
-			MaxValue = class'UTArmorPickup_ShieldBelt'.default.ShieldAmount;
+			if (InSP > 0)
+			{
+				BarTop -= BarHeight;
+				CurrentValue = UTPawnOwner.ShieldBeltArmor;
+				MaxValue = class'UTArmorPickup_ShieldBelt'.default.ShieldAmount;
 			
-			PercValue = float(CurrentValue)/float(MaxValue);
-			C = MakeColor(128,128,255, 255);
+				PercValue = float(CurrentValue)/float(MaxValue);
+				C = MakeColor(128,128,255, 255);
 			
-			DrawBarGraph(POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas, C, default.GrayColor);
-			//DrawHealth( POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas);
-			BarTop -= BarHeight;
+				DrawBarGraph(POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas, C, default.GrayColor);
+				//DrawHealth( POS.X, BarTop, BarWidth * PercValue, BarWidth, BarHeight, Canvas);
+				BarTop -= BarHeight;
+			}
 		}
 	}
 	else
